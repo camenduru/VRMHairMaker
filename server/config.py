@@ -18,9 +18,10 @@ if not os.path.isdir(HAIRDECK_CODE):  # moved installs: the sibling of this fold
 os.environ.setdefault('HAIRDECK_ROOT', os.path.join(PARENT, 'model'))
 os.environ['HAIRDECK_RESULTS'] = os.path.join(HAIRMAKER, 'results')
 os.environ['HAIRDECK_VRM_WORK'] = os.path.join(HAIRMAKER, 'results', 'vrm_export')
-# forward slashes: hairdeck.vrm.export splits HAIRDECK_BLENDER with shlex (backslashes would be eaten)
-os.environ['HAIRDECK_BLENDER'] = os.path.join(HAIRMAKER, 'tools', 'blender',
-                                              'blender-4.2.23-windows-x64', 'blender.exe').replace('\\', '/')
+# forward slashes: hairdeck.vrm.export splits HAIRDECK_BLENDER with shlex (backslashes would be eaten).
+# setdefault so a container image can point it at its own (Linux) Blender build
+os.environ.setdefault('HAIRDECK_BLENDER', os.path.join(HAIRMAKER, 'tools', 'blender',
+                                                       'blender-4.2.23-windows-x64', 'blender.exe').replace('\\', '/'))
 # the VRM Add-on for Blender sits in its own extensions folder (tools/blender/user/extensions/user_default/vrm);
 # blender.exe inherits these from the server process
 os.environ.setdefault('BLENDER_USER_EXTENSIONS', os.path.join(HAIRMAKER, 'tools', 'blender', 'user', 'extensions'))

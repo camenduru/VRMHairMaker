@@ -1,0 +1,26 @@
+# VRM Hair Maker — fully self-contained container (GPU)
+#
+#   docker compose -f hairmaker/docker/docker-compose.yml up --build
+#
+# then open http://localhost:8300
+# requires the NVIDIA Container Toolkit (docker run --gpus all equivalent)
+
+services:
+  hairmaker:
+    build:
+      context: ../..            # the HairDeck folder (contains code/, model/, hairmaker/)
+      dockerfile: hairmaker/docker/Dockerfile
+    image: vrm-hairmaker
+    container_name: vrm-hairmaker
+    ports:
+      - "8300:8300"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
