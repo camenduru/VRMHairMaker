@@ -1,0 +1,35 @@
+# --- Python ---
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# --- Node / web build (rebuild with: cd web && npm install && npm run build) ---
+web/node_modules/
+web/dist/
+
+# --- generated results (HairDeck outputs, spring-rig caches, exports, uploads) ---
+results/
+
+# --- user-uploaded avatars (data/bodies/<id>/model.vrm); body.json/meta.json are derived too ---
+data/bodies/u*/
+
+# --- Blender toolchain (downloaded build + isolated caches; the VRM add-on under user/extensions is tracked) ---
+tools/blender_dl/
+tools/blender/blender-4.2.23-windows-x64/
+tools/blender/home/
+tools/blender/tmp/
+tools/blender/user/config/
+tools/blender/user/datafiles/
+tools/blender/user/scripts/
+*.blend
+*.blend1
+
+# --- logs and scratch ---
+*.log
+.cache/
+.DS_Store
+Thumbs.db
+
+# downloaded toolchain archives (365 MB, exceeds GitHub 100 MB limit)
+tools/*.zip

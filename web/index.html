@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VRM Hair Maker — Animation-Ready Hair for your VRM avatar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div id="app-shell">
+    <header id="hdr">
+      <div class="hdr-left">
+        <div class="logo-mark" aria-hidden="true"><span></span></div>
+        <h1 class="wordmark"><span class="wk-pink">VRM</span><span class="wk-lime">HairMaker</span></h1>
+        <span class="wordmark-sub">Animation-ready hair for your VRM avatar</span>
+      </div>
+      <div class="hdr-right">
+        <span id="pipeline-status" class="status-chip">Loading the hair model…</span>
+      </div>
+    </header>
+
+    <main id="workspace">
+      <!-- ============ left: source ============ -->
+      <aside id="input-panel" class="column">
+        <div class="section-heading"><span class="step">01</span><h2>Source</h2></div>
+        <p class="section-copy">Pick or drop a VRM model, then add a portrait whose hairstyle you want.</p>
+
+        <div id="vrm-panel" class="panel-block">
+          <div class="panel-title">VRM model</div>
+          <div id="vrm-drop" class="dropzone" title="Drop a .vrm file or click to browse">
+            <input type="file" id="vrm-file" accept=".vrm" hidden />
+            <div class="drop-inner">
+              <div id="vrm-current-name">Sample Avatar B</div>
+              <div id="vrm-current-sub" class="muted small">default model · drop your own .vrm to replace</div>
+            </div>
+          </div>
+          <div id="vrm-status" class="muted small"></div>
+          <div id="vrm-models" class="chip-row"></div>
+        </div>
+
+        <div id="image-block" class="panel-block">
+          <div class="panel-title">Source image</div>
+          <div id="image-drop" class="dropzone tall">
+            <input type="file" id="image-file" accept="image/*" hidden />
+            <img id="image-preview" hidden />
+            <div id="image-hint" class="drop-inner">Drop a portrait here or click to browse</div>
+          </div>
+          <div id="examples-panel">
+            <div class="panel-title muted">Try an example</div>
+            <div id="examples-grid"></div>
+          </div>
+        </div>
+
+        <div id="sample-count" class="field">
+          <span class="panel-title">Variations</span>
+          <div class="seg" id="variations-seg">
+            <label><input type="radio" name="n_samples" value="1" checked /><span>1</span></label>
+            <label><input type="radio" name="n_samples" value="2" /><span>2</span></label>
+            <label><input type="radio" name="n_samples" value="3" /><span>3</span></label>
+            <label><input type="radio" name="n_samples" value="4" /><span>4</span></label>
+          </div>
+        </div>
+
+        <details id="advanced">
+          <summary>Advanced settings</summary>
+          <div class="adv-grid">
+            <label class="field">Seed
+              <input type="number" id="seed" value="0" min="0" step="1" />
+              <span class="hint">Change the seed for a different result.</span>
+            </label>
+            <div class="field">Sampling steps
+              <div class="seg" id="steps-seg">
+                <label><input type="radio" name="steps" value="50" checked /><span>50</span></label>
+                <label><input type="radio" name="steps" value="10" /><span>10</span></label>
+              </div>
+              <span class="hint">10 is faster. 50 uses more refinement steps.</span>
+            </div>
+            <label class="field">Guidance scale <output id="cfg-out">2.0</output>
+              <input type="range" id="cfg" min="1" max="4" step="0.25" value="2" />
+            </label>
+          </div>
+        </details>
+
+        <button id="gen-btn" class="primary" disabled>Generate hair</button>
+      </aside>
+
+      <!-- ============ right: preview ============ -->
+      <section id="result-panel" class="column">
+        <div id="preview-panel">
+          <div id="preview-top">
+            <div>
+              <div class="section-heading"><span class="step step-pink">02</span><h2>Preview</h2></div>
+              <p class="section-copy">Drag to orbit · Scroll to zoom</p>
+            </div>
+            <div id="viewer-toolbar">
+              <label class="check"><input type="checkbox" id="show-head" checked /><span>Reference head</span></label>
+              <label class="check"><input type="checkbox" id="show-chains" /><span>Spring bones</span></label>
+              <div id="motion-buttons" hidden>
+                <button class="mini motion" data-motion="turn">Turn</button>
+                <button class="mini motion" data-motion="nod">Nod</button>
+                <button class="mini motion" data-motion="jump">Jump</button>
+                <button class="mini motion" data-motion="sway">Sway</button>
+                <button class="mini" id="motion-stop">Stop</button>
+                <button class="mini" id="view-reset">Reset view</button>
+              </div>
+            </div>
+          </div>
+          <div id="viewer-wrap">
+            <canvas id="viewer"></canvas>
+            <div id="viewer-empty">Your avatar with 3D hair will appear here</div>
+            <div id="viewer-badge" hidden></div>
+          </div>
+          <div id="variation-row">
+            <select id="variation-pick" disabled><option>— generate hair first —</option></select>
+            <span id="viewer-status" class="muted small">Add an image to get started.</span>
+          </div>
+        </div>
+
+        <div id="lower-row">
+          <div id="animation-panel">
+            <div class="section-heading"><span class="step step-cyan">03</span><h2>Animation &amp; VRM</h2></div>
+            <p class="section-copy">Preview the spring-bone motion live in the viewer, render the classic head-turn
+              video, or export the hair on your model as a downloadable VRM.</p>
+            <div id="animation-actions">
+              <button id="export-btn" class="secondary" disabled>Export VRM</button>
+              <button id="turn-btn" class="secondary" disabled>Head-turn video</button>
+              <button id="wear-btn" class="primary" disabled>Wear exported VRM</button>
+            </div>
+            <div id="export-info" class="legend muted small">Export puts this hair (with its spring bones) onto the
+              selected model as a downloadable VRM avatar.</div>
+          </div>
+
+          <div id="downloads-col">
+            <div class="tabs">
+              <button class="tab active" data-tab="downloads">Downloads</button>
+              <button class="tab" data-tab="input">Input details</button>
+            </div>
+            <div id="tab-downloads" class="tabpane">
+              <p class="legend muted small">GLB meshes and geometry data for the selected variation. Motion previews
+                and VRM avatars appear here after you create them.</p>
+              <ul id="file-list" class="file-list"><li class="muted">No files yet.</li></ul>
+              <button id="zip-btn" class="mini" disabled>Download all (zip)</button>
+            </div>
+            <div id="tab-input" class="tabpane" hidden>
+              <p class="legend muted small">The detected hair, face, and crop are shown on the left. The prepared
+                portrait is shown on the right.</p>
+              <img id="prep-vis" hidden />
+              <div id="prep-none" class="muted small">No processed input yet.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="ftr">Hair generation by HairDeck · VRM preview with three-vrm · for best results use a clear portrait
+      with the full hairstyle visible</footer>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
