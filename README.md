@@ -1,5 +1,7 @@
 # VRM Hair Maker
 
+https://github.com/user-attachments/assets/a2e3f0cd-4938-49a9-aead-bdf6fba6ba8a
+
 Generate stylized 3D hair from a single portrait and wear it on a VRM avatar — in the browser, with live
 spring-bone physics, and as a downloadable VRM file with the hair (and its spring bones) baked in.
 
