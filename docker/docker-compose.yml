@@ -10,7 +10,7 @@ services:
     build:
       context: ../..            # the HairDeck folder (contains code/, model/, hairmaker/)
       dockerfile: hairmaker/docker/Dockerfile
-    image: vrm-hairmaker
+    image: camenduru/vrmhairmaker
     container_name: vrm-hairmaker
     ports:
       - "8300:8300"

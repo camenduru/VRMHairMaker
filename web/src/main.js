@@ -484,6 +484,22 @@ async function fetchJSON(url, opts) {
   return body;
 }
 
+function fileNameOf(url) {
+  try { return decodeURIComponent(String(url).split('?')[0].split('/').pop()) || 'avatar.vrm'; }
+  catch { return 'avatar.vrm'; }
+}
+
+// Save a result file through the browser's own download path (a same-origin <a download>, not a new tab).
+function downloadFile(url, filename) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename || fileNameOf(url);
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 async function refreshModels(selectId) {
   state.models = await fetchJSON('/api/models');
   els.vrmModels.innerHTML = '';
@@ -628,7 +644,7 @@ async function applyResult(result, { keepSeed = false } = {}) {
   state.seedIdx = keepSeed ? Math.min(state.seedIdx, Math.max(0, state.samples.length - 1)) : 0;
   state.exportedUrl = null; state.turnUrl = null;
   els.wearBtn.disabled = true;
-  els.exportInfo.textContent = 'Export puts this hair (with its spring bones) onto the selected model as a downloadable VRM 0.x avatar.';
+  els.exportInfo.textContent = 'Export puts this hair (with its spring bones) onto the selected model and downloads it as a VRM avatar.';
   refreshVariations();
   setStatus();
   await refreshFiles();
@@ -730,6 +746,7 @@ els.variation.addEventListener('change', async () => {
   state.seedIdx = Number(els.variation.value) || 0;
   state.exportedUrl = null;
   els.wearBtn.disabled = true;
+  els.exportInfo.textContent = 'Export puts this hair (with its spring bones) onto the selected model and downloads it as a VRM avatar.';
   await refreshFiles();
   await refreshHair();
 });
@@ -750,9 +767,12 @@ els.exportBtn.addEventListener('click', async () => {
       method: 'POST', body: new URLSearchParams({ out_id: state.outId, seed: s.seed, vrm: state.bodyId || 'default' }),
     });
     state.exportedUrl = r.vrm;
+    const file = fileNameOf(r.vrm);
+    downloadFile(r.vrm, file);   // the user asked for the file — save it, don't just add it to the Downloads tab
     const oktxt = r.ok ? 'The file passed validation.' : 'Note: ' + (r.problems?.[0] || 'the file did not pass every validation check.');
     const ver = state.body?.vrm_version === '1.0' ? 'VRM 1.0' : 'VRM 0.x';
-    els.exportInfo.innerHTML = `Seed ${s.seed} · ${ver} · ${r.size_mb} MB · ${r.n_chains ?? 0} spring chain(s). ${oktxt}`;
+    els.exportInfo.innerHTML = `Seed ${s.seed} · ${ver} · ${r.size_mb} MB · ${r.n_chains ?? 0} spring chain(s). ${oktxt} ` +
+      `<a href="${r.vrm}" download="${file}">Download ${file}</a>`;
     els.wearBtn.disabled = false;
     await wearExported(r.vrm);
     await refreshFiles();

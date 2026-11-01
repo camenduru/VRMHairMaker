@@ -11,10 +11,10 @@
 #   - ffmpeg + all python deps (torch cu128 wheels bundle their own CUDA runtime)
 #
 # Build (from the HairDeck folder, the parent of hairmaker/):
-#   docker build -t vrm-hairmaker -f hairmaker/docker/Dockerfile .
+#   docker build -t camenduru/vrmhairmaker -f hairmaker/docker/Dockerfile .
 #
 # Run (needs NVIDIA Container Toolkit for the GPU):
-#   docker run --gpus all -p 8300:8300 vrm-hairmaker
+#   docker run --gpus all -p 8300:8300 camenduru/vrmhairmaker
 # then open http://localhost:8300
 # ============================================================================
 
@@ -49,26 +49,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /opt/HairDeck
 
-# ---- HairDeck source tree (hairdeck package + the blender/ scripts it drives) ----
-COPY code/ /opt/HairDeck/code/
-
-# ---- the workspace: checkpoints, data, third-party weights and sources ----
-COPY model/ /opt/HairDeck/model/
-
-# ---- the app itself ----
-COPY hairmaker/server/ /opt/HairDeck/hairmaker/server/
-COPY hairmaker/blender/ /opt/HairDeck/hairmaker/blender/
-COPY hairmaker/data/ /opt/HairDeck/hairmaker/data/
-COPY hairmaker/static/ /opt/HairDeck/hairmaker/static/
-COPY --from=web /build/dist/ /opt/HairDeck/hairmaker/web/dist/
-
-# ---- Blender 4.2.23 LTS (linux-x64) + the VRM Add-on shipped with the workspace ----
-RUN curl -fsSL --retry 6 --retry-delay 4 --retry-all-errors -o /tmp/blender.tar.xz \
-        https://download.blender.org/release/Blender4.2/blender-4.2.23-linux-x64.tar.xz \
-    && mkdir -p /opt/HairDeck/hairmaker/tools/blender \n    && tar -xJf /tmp/blender.tar.xz -C /opt/HairDeck/hairmaker/tools/blender/ \
-    && rm /tmp/blender.tar.xz
-COPY hairmaker/tools/blender/user/ /opt/HairDeck/hairmaker/tools/blender/user/
-
+# Heavy, app-independent layers come first so app edits (server/, web/, static/) reuse them and only the
+# cheap COPY layers at the bottom are rebuilt.
 # ---- python dependencies (torch cu128 wheels bundle their own CUDA runtime) ----
 RUN pip install --no-cache-dir torch==2.8.0 torchvision==0.23.0 \
         --index-url https://download.pytorch.org/whl/cu128 \
@@ -84,6 +66,27 @@ RUN pip install --no-cache-dir torch==2.8.0 torchvision==0.23.0 \
         fastapi "uvicorn[standard]" python-multipart \
  && pip install --no-cache-dir --no-deps pyrender==0.1.45
 # (triton, required by SAM 3's EDT kernel, is installed automatically as a torch dependency on linux)
+
+# ---- Blender 4.2.23 LTS (linux-x64) + the VRM Add-on shipped with the workspace ----
+RUN curl -fsSL --retry 6 --retry-delay 4 --retry-all-errors -o /tmp/blender.tar.xz \
+        https://download.blender.org/release/Blender4.2/blender-4.2.23-linux-x64.tar.xz \
+    && mkdir -p /opt/HairDeck/hairmaker/tools/blender \
+    && tar -xJf /tmp/blender.tar.xz -C /opt/HairDeck/hairmaker/tools/blender/ \
+    && rm /tmp/blender.tar.xz
+COPY hairmaker/tools/blender/user/ /opt/HairDeck/hairmaker/tools/blender/user/
+
+# ---- HairDeck source tree (hairdeck package + the blender/ scripts it drives) ----
+COPY code/ /opt/HairDeck/code/
+
+# ---- the workspace: checkpoints, data, third-party weights and sources ----
+COPY model/ /opt/HairDeck/model/
+
+# ---- the app itself ----
+COPY hairmaker/server/ /opt/HairDeck/hairmaker/server/
+COPY hairmaker/blender/ /opt/HairDeck/hairmaker/blender/
+COPY hairmaker/data/ /opt/HairDeck/hairmaker/data/
+COPY hairmaker/static/ /opt/HairDeck/hairmaker/static/
+COPY --from=web /build/dist/ /opt/HairDeck/hairmaker/web/dist/
 
 EXPOSE 8300
 WORKDIR /opt/HairDeck/hairmaker
