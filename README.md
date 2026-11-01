@@ -9,7 +9,25 @@ Hair generation is [HairDeck](https://github.com/hyz317/HairDeck) (animation-rea
 from one image); the VRM preview follows the technique of the local rtmlib web app (three.js + @pixiv/three-vrm,
 MToon, VRMA idle animation).
 
-## Run
+## 🚀 Run
+
+1. **Install Docker** — download [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows AMD64) and
+   run it. Wait until the whale icon says Docker is running.
+
+2. **Start VRM HairMaker**
+
+    docker run -d --name vrm-hairmaker --restart unless-stopped --gpus all -p 8300:8300 -v vrm-hairmaker-data:/opt/HairDeck/hairmaker/results camenduru/vrmhairmaker
+
+Open http://localhost:8300. That is the whole setup — the image is self-contained (HairDeck + its checkpoints,
+Blender 4.2 LTS + the VRM Add-on, the built web app and the sample avatars), so nothing else has to be installed or
+downloaded.
+
+The hair model loads in the background (~30 s on first start); "Hair model ready." enables Generate. Generations and
+exported VRMs are written to the `vrm-hairmaker-data` volume, so they survive `docker rm` / `docker pull` of a new
+version. The image is ~17 GB and needs an NVIDIA GPU (the pipeline runs on CUDA through the WSL2 GPU support of
+Docker Desktop).
+
+## Run from source
 
     cd hairmaker
     venv\Scripts\python.exe -m server.main --port 8300
