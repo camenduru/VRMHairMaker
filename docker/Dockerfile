@@ -63,7 +63,7 @@ COPY hairmaker/static/ /opt/HairDeck/hairmaker/static/
 COPY --from=web /build/dist/ /opt/HairDeck/hairmaker/web/dist/
 
 # ---- Blender 4.2.23 LTS (linux-x64) + the VRM Add-on shipped with the workspace ----
-RUN curl -fsSL -o /tmp/blender.tar.xz \
+RUN curl -fsSL --retry 6 --retry-delay 4 --retry-all-errors -o /tmp/blender.tar.xz \
         https://download.blender.org/release/Blender4.2/blender-4.2.23-linux-x64.tar.xz \
     && tar -xJf /tmp/blender.tar.xz -C /opt/HairDeck/hairmaker/tools/blender/ \
     && rm /tmp/blender.tar.xz
