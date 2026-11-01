@@ -125,13 +125,22 @@ def _write(mid, body):
 def _read(mid):
     d = os.path.join(BODIES_DIR, mid)
     b = json.load(open(os.path.join(d, 'body.json')))
-    b.update(vrm=os.path.abspath(b['vrm']), dir=os.path.abspath(b['dir']), k=float(b['k']),
+    # A body folder is self-contained: body.json may carry a path from another machine or install (the shipped
+    # default bodies are written on the dev host, containers are built from it), so fall back to the folder's own
+    # model.vrm and persist the repair — Blender re-reads body.json, not this dict.
+    local = os.path.join(d, 'model.vrm')
+    repaired = False
+    if (not b.get('vrm') or not os.path.exists(b['vrm'])) and os.path.exists(local):
+        b['vrm'], b['dir'], repaired = local, d, True
+    b.update(vrm=os.path.abspath(b['vrm']), dir=os.path.abspath(b.get('dir') or d), k=float(b['k']),
              b=[float(x) for x in b['b']], h=int(b['h']))
     meta = {}
     mp = os.path.join(d, 'meta.json')
     if os.path.exists(mp):
         meta = json.load(open(mp))
     b['meta'] = meta
+    if repaired:
+        _write(mid, {k: v for k, v in b.items() if k != 'meta'})
     return b
 
 
