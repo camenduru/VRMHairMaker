@@ -16,7 +16,9 @@ MToon, VRMA idle animation).
 
 2. **Start VRM HairMaker**
 
+    ```bash
     docker run -d --name vrm-hairmaker --restart unless-stopped --gpus all -p 8300:8300 -v vrm-hairmaker-data:/opt/HairDeck/hairmaker/results camenduru/vrmhairmaker
+    ```
 
 Open http://localhost:8300. That is the whole setup — the image is self-contained (HairDeck + its checkpoints,
 Blender 4.2 LTS + the VRM Add-on, the built web app and the sample avatars), so nothing else has to be installed or
